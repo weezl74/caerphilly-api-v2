@@ -4,7 +4,7 @@ const sql = require("mssql");
 
 const app = express();
 app.use(express.json());
-
+const auth = require("./middleware/auth");
 // SQL connection config
 const config = {
   user: process.env.SQL_USER,
