@@ -20,7 +20,20 @@ const config = {
 app.get("/", (req, res) => {
   res.send("API working ✅");
 });
+app.get("/me/profile", auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
 
+    res.json({
+      message: "authenticated route working",
+      userId
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "failed"
+    });
+  }
+});
 // Get leaderboard
 app.get("/profile", async (req, res) => {
   try {
