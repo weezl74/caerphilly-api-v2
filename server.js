@@ -76,7 +76,34 @@ app.post("/profile", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.get("/map-locations", async (req, res) => {
+  try {
+    await sql.connect(config);
 
+    const result = await sql.query(`
+      SELECT
+        Id,
+        Name,
+        Postcode,
+        Category,
+        Description,
+        Latitude,
+        Longitude,
+        Website
+      FROM MapLocations
+      WHERE IsActive = 1
+    `);
+
+    res.json(result.recordset);
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      error: err.message
+    });
+  }
+});
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
