@@ -104,6 +104,31 @@ app.get("/map-locations", async (req, res) => {
     });
   }
 });
+app.get("/map-locations", async (req, res) => {
+  try {
+    await sql.connect(config);
+
+    const result = await sql.query(`
+      SELECT
+        Id,
+        Name,
+        Postcode,
+        Category,
+        CarbonAction,
+        Latitude,
+        Longitude
+      FROM dbo.MapLocations
+      WHERE IsActive = 1
+    `);
+
+    res.json(result.recordset);
+
+  } catch (err) {
+    res.status(500).json({
+      error: err.message
+    });
+  }
+});
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
