@@ -12,7 +12,7 @@ const config = {
   user: process.env.SQL_USER,
   password: process.env.SQL_PASSWORD,
   server: process.env.SQL_SERVER,
- database: process.env.SQL_DATABASE,
+  database: process.env.SQL_DATABASE,
   options: {
     encrypt: true
   }
@@ -116,10 +116,22 @@ app.get("/map-locations", async (req, res) => {
   try {
     await sql.connect(config);
 
-   const result = await sql.query(`
-  SELECT
-    DB_NAME() AS DatabaseName
-`);
+    const result = await sql.query(`
+      SELECT
+        Id,
+        Name,
+        Postcode,
+        Category,
+        Description,
+        Latitude,
+        Longitude,
+        Website,
+        Phone,
+        Email
+      FROM dbo.MapLocations
+      WHERE IsActive = 1
+      ORDER BY Name
+    `);
 
     res.json(result.recordset);
 
