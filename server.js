@@ -1,10 +1,12 @@
-
 const express = require("express");
 const sql = require("mssql");
 
 const app = express();
+
 app.use(express.json());
+
 const auth = require("./middleware/auth");
+
 // SQL connection config
 const config = {
   user: process.env.SQL_USER,
@@ -20,6 +22,8 @@ const config = {
 app.get("/", (req, res) => {
   res.send("API working ✅");
 });
+
+// Auth test
 app.get("/me/profile", auth, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -34,26 +38,39 @@ app.get("/me/profile", auth, async (req, res) => {
     });
   }
 });
+
 // Get leaderboard
 app.get("/profile", async (req, res) => {
   try {
     await sql.connect(config);
 
     const result = await sql.query(`
-      SELECT user_id, display_name, username, wool_points, tree_points
+      SELECT
+        user_id,
+        display_name,
+        username,
+        wool_points,
+        tree_points
       FROM profiles
     `);
 
     res.json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message
+    });
   }
 });
 
 // Save profile
 app.post("/profile", async (req, res) => {
   try {
-    const { user_id, display_name, username, account_type } = req.body;
+    const {
+      user_id,
+      display_name,
+      username,
+      account_type
+    } = req.body;
 
     await sql.connect(config);
 
@@ -61,21 +78,40 @@ app.post("/profile", async (req, res) => {
       MERGE profiles AS target
       USING (SELECT ${user_id} AS user_id) AS source
       ON target.user_id = source.user_id
+
       WHEN MATCHED THEN
         UPDATE SET
           display_name = ${display_name},
           username = ${username},
           account_type = ${account_type || "resident"}
+
       WHEN NOT MATCHED THEN
-        INSERT (user_id, display_name, username, account_type)
-        VALUES (${user_id}, ${display_name}, ${username}, ${account_type || "resident"});
+        INSERT (
+          user_id,
+          display_name,
+          username,
+          account_type
+        )
+        VALUES (
+          ${user_id},
+          ${display_name},
+          ${username},
+          ${account_type || "resident"}
+        );
     `;
 
-    res.json({ success: true });
+    res.json({
+      success: true
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message
+    });
   }
 });
+
+// Map locations
 app.get("/map-locations", async (req, res) => {
   try {
     await sql.connect(config);
@@ -89,9 +125,12 @@ app.get("/map-locations", async (req, res) => {
         Description,
         Latitude,
         Longitude,
-        Website
-      FROM MapLocations
+        Website,
+        Phone,
+        Email
+      FROM dbo.MapLocations
       WHERE IsActive = 1
+      ORDER BY Name
     `);
 
     res.json(result.recordset);
@@ -104,33 +143,10 @@ app.get("/map-locations", async (req, res) => {
     });
   }
 });
-app.get("/map-locations", async (req, res) => {
-  try {
-    await sql.connect(config);
 
-    const result = await sql.query(`
-      SELECT
-        Id,
-        Name,
-        Postcode,
-        Category,
-        CarbonAction,
-        Latitude,
-        Longitude
-      FROM dbo.MapLocations
-      WHERE IsActive = 1
-    `);
-
-    res.json(result.recordset);
-
-  } catch (err) {
-    res.status(500).json({
-      error: err.message
-    });
-  }
-});
 // Start server
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log(`API running on port ${PORT}`);
 });
