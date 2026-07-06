@@ -116,22 +116,10 @@ app.get("/map-locations", async (req, res) => {
   try {
     await sql.connect(config);
 
-    const result = await sql.query(`
-      SELECT
-        Id,
-        Name,
-        Postcode,
-        Category,
-        Description,
-        Latitude,
-        Longitude,
-        Website,
-        Phone,
-        Email
-      FROM dbo.MapLocations
-      WHERE IsActive = 1
-      ORDER BY Name
-    `);
+   const result = await sql.query(`
+  SELECT
+    DB_NAME() AS DatabaseName
+`);
 
     res.json(result.recordset);
 
