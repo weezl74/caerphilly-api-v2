@@ -2,7 +2,9 @@ const express = require("express");
 const sql = require("mssql");
 
 const app = express();
+const cors = require("cors");
 
+app.use(cors());
 app.use(express.json());
 
 const auth = require("./middleware/auth");
