@@ -143,7 +143,38 @@ app.get("/map-locations", async (req, res) => {
     });
   }
 });
+// Single profile lookup (safe - does not affect existing /profile endpoint)
+app.get("/profile-single", async (req, res) => {
+  try {
+    const { user_id } = req.query;
 
+    if (!user_id) {
+      return res.status(400).json({
+        error: "user_id required"
+      });
+    }
+
+    await sql.connect(config);
+
+    const result = await sql.query`
+      SELECT
+        user_id,
+        display_name,
+        username,
+        wool_points,
+        tree_points
+      FROM profiles
+      WHERE user_id = ${user_id}
+    `;
+
+    res.json(result.recordset[0] || null);
+
+  } catch (err) {
+    res.status(500).json({
+      error: err.message
+    });
+  }
+});
 // Start server
 const PORT = process.env.PORT || 3000;
 
